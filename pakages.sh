@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Installing instaloader..."
+echo "Installing playwright..."
 
-pip install instaloader
+pip install playwright
 
 echo "Installation complete."
