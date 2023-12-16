@@ -12,7 +12,7 @@ def find_unique_followers(a_list, b_list, my_list):
 	for j in range(len(x_list)):
 		followers = []
 		# 仮のフォロワーデータを設定（実際にはSNSから取得する）
-		for i in range(3):
+		for i in range(5):
 			followers.append(f"follower{i}")
 		x_list[j].append(followers)
 	print(x_list)
