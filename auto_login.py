@@ -7,42 +7,51 @@ def run(playwright: Playwright) -> None:
     browser = playwright.chromium.launch(headless=False)
     context = browser.new_context()
 
-    # Open new page
+    # 新しいページを開く
     page = context.new_page()
 
-    # Go to https://www.instagram.com/
+    # https://www.instagram.com/に飛ぶ
     page.goto("https://www.instagram.com/")
 
-    # Fill with username
+    # ユーザーネームを入力
     page.get_by_label("Phone number, username, or email").click()
     page.get_by_label("Phone number, username, or email").fill(username)
 
-    # Fill with password
+    # パスワードを入力
     page.get_by_label("Password").click()
     page.get_by_label("Password").fill(password)
 
-    # Click Log In
+    # Log inをクリック
     page.get_by_role("button", name="Log in", exact=True).click()
     page.wait_for_url("https://www.instagram.com/accounts/onetap/?next=%2F")
 
     page.goto("https://www.instagram.com/")
 
-    # Click text=Not Now
+    # 通知表示で「Not Now」を入力
     page.get_by_role("button", name="Not Now").click()
     page.wait_for_url("https://www.instagram.com/")
 
-    # put the link of the profile from which you want to get followers
-    # page.goto("https://www.instagram.com/desired_profile/followers/")
-    page_to_go = "https://www.instagram.com/" + username + "/followers/"
+    # フォローしているユーザーのリストを表示
+    page_to_go = "https://www.instagram.com/" + username + "/following/"
     page.goto(page_to_go)
 
-    # Use the while loop where you compare the number of profiles in the DOM
-    # with the number of followers indicated in the profile header
-    # because this example will only scroll 5 times
-    for _ in range(5):
+    previous_count = 0
+    while True:
+        # フォローページの末尾にいくまでスクロールする
         page.locator('a > div > div > span[dir="auto"]').last.scroll_into_view_if_needed()
-        page.wait_for_timeout(5 * 1000)
-    page.pause()
+        page.wait_for_timeout(2000)  # Adjust the timeout as needed
+
+        # 現在までにロードしたフォロー数を数える
+        current_count = page.locator('a > div > div > span[dir="auto"]').count()
+
+        # スクロールの前後でカウント数が更新されているか確認、更新がなかったらスクロールをやめる
+        if current_count == previous_count:
+            break  # Exit the loop if no new elements are loaded
+
+        previous_count = current_count
+
+    # ブラウザを閉じる
+    browser.close()
 
 if __name__ == "__main__":
     with sync_playwright() as pw:
