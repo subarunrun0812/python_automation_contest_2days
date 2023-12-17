@@ -13,7 +13,7 @@ def locate(page):
         page.locator('a > div > div > span[dir="auto"]').last.scroll_into_view_if_needed()
 
         # ユーザー名の取得
-        following_locator = page.locator('body > div.x1n2onr6.xzkaem6 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1uvtmcs.x4k7w5x.x1h91t0o.x1beo9mf.xaigb6o.x12ejxvf.x3igimt.xarpa2k.xedcshv.x1lytzrv.x1t2pt76.x7ja8zs.x1n2onr6.x1qrby5j.x1jfb8zj > div > div > div > div > div.x7r02ix.xf1ldfh.x131esax.xdajt7p.xxfnqb6.xb88tzc.xw2csxc.x1odjw0f.x5fp0pe > div > div > div._aano > div:nth-child(1)')
+        following_locator = page.locator('#mount_0_0_vu > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div > div > div.x78zum5.xdt5ytf.x1t2pt76.x1n2onr6.x1ja2u2z.x10cihs4 > div.x9f619.xvbhtw8.x78zum5.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x1uhb9sk.x1plvlek.xryxfnj.x1c4vz4f.x2lah0s.xdt5ytf.xqjyukv.x1qjc9v5.x1oa3qoh.x1qughib > div.x1gryazu.xh8yej3.x10o80wk.x14k21rp.x17snn68.x6osk4m.x1porb0y > section > main > div._aano > div > div')
         followingUsersElements = following_locator.locator('.x1a02dak.x1q0g3np.xdl72j9 a[role="link"]')
         for followingUsersElement in followingUsersElements.all():
             userName = followingUsersElement.inner_text()
@@ -33,10 +33,20 @@ def locate(page):
 
 
 
-def find_user(page, username):
+def find_my_user(page, username):
     # フォローしているユーザーのリストを表示
     page.goto(f"https://www.instagram.com/{username}/following/")
     page.wait_for_timeout(5000)  # Adjust the timeout as needed
+    return(locate(page))
+
+def find_other_user(page, username):
+    # フォローしているユーザーのリストを表示
+    # 「following」ボタンをクリック
+    page.wait_for_load_state('networkidle')
+    following_button = page.get_by_text("following", exact=True)
+    # following_button = page.locator('#mount_0_0_44 > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div > div > div.x78zum5.xdt5ytf.x1t2pt76.x1n2onr6.x1ja2u2z.x10cihs4 > div.x9f619.xvbhtw8.x78zum5.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x1uhb9sk.x1plvlek.xryxfnj.x1c4vz4f.x2lah0s.xdt5ytf.xqjyukv.x1qjc9v5.x1oa3qoh.x1qughib > div.x1gryazu.xh8yej3.x10o80wk.x14k21rp.x17snn68.x6osk4m.x1porb0y > div:nth-child(2) > section > main > div > ul > li:nth-child(3) > a > span')
+    following_button.click()
+    page.wait_for_load_state('networkidle')
     return(locate(page))
 
 def find_unique_followers(a_list, b_list, my_list, page):
@@ -72,11 +82,22 @@ def run(playwright: Playwright, username, password, user1, user2) -> None:
     browser = playwright.chromium.launch(headless=False)
     context = browser.new_context()
 
+    # デバイスを指定
+    iphone_13 = playwright.devices['iPhone 13']
+    context = browser.new_context(**iphone_13,)
+	
     # 新しいページを開く
     page = context.new_page()
-
+    
     # https://www.instagram.com/に飛ぶ
     page.goto("https://www.instagram.com/")
+	
+	
+    # 「Log in」ボタンをクリック
+    page.get_by_role("button", name="Log in", exact=True).click()
+	 
+    # 時間を置く
+    page.wait_for_timeout(2000)  
 
     # ユーザーネームを入力
     page.get_by_label("Phone number, username, or email").click()
@@ -86,6 +107,9 @@ def run(playwright: Playwright, username, password, user1, user2) -> None:
     page.get_by_label("Password").click()
     page.get_by_label("Password").fill(password)
 
+    # 時間を置く
+    page.wait_for_timeout(2000)  
+	
     # Log inをクリック
     page.get_by_role("button", name="Log in", exact=True).click()
     page.wait_for_url("https://www.instagram.com/accounts/onetap/?next=%2F")
@@ -93,17 +117,32 @@ def run(playwright: Playwright, username, password, user1, user2) -> None:
     page.goto("https://www.instagram.com/")
 
     # 通知表示で「Not Now」を入力
-    page.get_by_role("button", name="Not Now").click()
-    page.wait_for_url("https://www.instagram.com/")
+    # page.get_by_role("button", name="Not Now").click()
+    # page.wait_for_url("https://www.instagram.com/") 今消した
 
+    # 時間を置く
+    page.wait_for_load_state('networkidle')
+	
     # フォローしているユーザーのリストを表示
-    page.goto(f"https://www.instagram.com/{username}/following/")
+    # page.goto(f"https://www.instagram.com/{username}/following/")
+    page.goto(f"https://www.instagram.com/{username}/")
 
+    # page.get_by_role("button", name="Not Now").click()
+	
+    # 時間を置く
+    page.wait_for_load_state('networkidle')
+	 
     # ユーザーA、ユーザーBの情報を得る
-    user_self = find_user(page, username)
-    user_a = find_user(page, user1)
-    user_b = find_user(page, user2)
+    user_self = find_my_user(page, username)
+    page.wait_for_load_state('networkidle')
     print(user_self)
+    page.goto(f"https://www.instagram.com/{user1}/")
+    page.wait_for_load_state('networkidle')
+    user_a = find_other_user(page, user1)
+    page.wait_for_load_state('networkidle')
+    page.goto(f"https://www.instagram.com/{user2}/")
+    page.wait_for_load_state('networkidle')
+    user_b = find_other_user(page, user2)
     print(user_a)
     print(user_b)
 
