@@ -1,5 +1,32 @@
 FROM python:latest
 
+# 必要なパッケージと依存関係をインストール
+RUN apt-get update && apt-get install -y \
+    xvfb \
+    openssh-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# SSHサーバーの設定
+RUN mkdir /var/run/sshd
+RUN echo 'root:password' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# SSH接続でX11フォワーディングを許可
+RUN sed -i 's/#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config
+RUN sed -i 's/#X11Forwarding no/X11Forwarding yes/' /etc/ssh/sshd_config
+
+# ユーザーがログイン時に /home に移動するように設定
+RUN echo 'cd /home' >> /root/.bashrc
+
+# Playwright とその依存関係をインストール
 RUN pip install playwright
 RUN playwright install
 RUN playwright install-deps
+
+# 環境変数 DISPLAY を設定
+ENV DISPLAY=:99
+
+# SSHポートを公開
+EXPOSE 22
+
+# SSHサーバーの起動
+CMD ["/usr/sbin/sshd", "-D"]
