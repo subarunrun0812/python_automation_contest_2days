@@ -46,11 +46,13 @@ def find_unique_followers(a_list, b_list, my_list, page):
 	for account in a_list:
 		if account in b_list and account not in my_list:
 			x_list.append([account])
-
+	# print("xlist =")
+	# print(x_list)
 	for j in range(len(x_list)):
 		followers = find_user(page, x_list[j])
 		x_list[j].append(followers)
-	print(x_list)
+	# print("append後 xlist =")
+	# print(x_list)
 		
 	y_list = []
 	for _, followers in x_list:
@@ -111,7 +113,8 @@ def run(playwright: Playwright, username, password, user1, user2) -> None:
     print(unique_followers)
     # ブラウザを閉じる
     browser.close()
+    return (unique_followers)
 
 def run_playwright(username, password, insta1, insta2):
     with sync_playwright() as pw:
-        run(pw, username, password, insta1, insta2)
+        return (run(pw, username, password, insta1, insta2))

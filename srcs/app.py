@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, PhotoImage
-# from auto_login import run_playwright
+from auto_login import run_playwright
 
 # スタイル設定
 FONT = ("Arial", 12)
@@ -19,9 +19,9 @@ def submit_form():
     insta1 = entry_insta1.get()
     insta2 = entry_insta2.get()
     # Call the Playwright function with the input data
-    # run_playwright(username, password, insta1, insta2)
+    result = run_playwright(username, password, insta1, insta2)
     messagebox.showinfo("送信情報", "ユーザ名: {}\nパスワード: {}\nインスタ1: {}\nインスタ2: {}".format(username, password, insta1, insta2))
-    display_list()
+    display_list(result)
 
 def load_list_from_file(file_path):
     try:
@@ -31,8 +31,8 @@ def load_list_from_file(file_path):
         messagebox.showerror("エラー", f"ファイルが見つかりません: {file_path}")
         return []
 
-def display_list():
-    list_items = ['ここにyさんが入るよ','sdwdwed','dwdwd'] # ファイルパスを適宜変更
+def display_list(result):
+    list_items = result # ファイルパスを適宜変更
     listbox.delete('1.0', tk.END)
     for i, item in enumerate(list_items, start=1):
         listbox.insert(tk.END, f"{i}. {item}\n")
@@ -42,7 +42,7 @@ app.title("フォームアプリ")
 app.geometry("400x600") 
 
 # 背景画像を読み込む
-bg_image = PhotoImage(file="background .png")  # 画像ファイル名を適宜変更
+bg_image = PhotoImage(file="../background .png")  # 画像ファイル名を適宜変更
 
 # 背景画像を表示するラベルを作成
 bg_label = tk.Label(app, image=bg_image)
